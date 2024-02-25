@@ -1,4 +1,5 @@
 import net from "net";
+import { json } from "stream/consumers";
 import { WebSocket, WebSocketServer } from "ws";
 
 interface VehicleData {
@@ -11,20 +12,40 @@ const WS_PORT = 8080;
 const tcpServer = net.createServer();
 const websocketServer = new WebSocketServer({ port: WS_PORT });
 
+let criticalTempTimestamps: number[] = [];
+
 tcpServer.on("connection", (socket) => {
   console.log("TCP client connected");
 
   socket.on("data", (msg) => {
     console.log(`Received: ${msg.toString()}`);
 
-    const jsonData: VehicleData = JSON.parse(msg.toString());
+    const dataString: String = msg.toString();
+    // Checks if error flag is thrown in data which is indicated by "}}" at the end of string.
+    if (dataString.slice(-2) !== "}}") {
+      const jsonData: VehicleData = JSON.parse(msg.toString());
+      const { battery_temperature, timestamp } = jsonData;
+      
+      if (battery_temperature <= 20 || battery_temperature >= 80) {
+        criticalTempTimestamps.push(timestamp);
 
-    // Send JSON over WS to frontend clients
-    websocketServer.clients.forEach(function each(client) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(msg.toString());
+        criticalTempTimestamps = criticalTempTimestamps.filter(
+          (timestamps) => timestamp - timestamps <= 5000
+        );
+
+        if (criticalTempTimestamps.length >= 3) {
+          console.log(`Critical battery temperature detected. \nCurrent Timestamp: ${timestamp}`);
+        }
       }
-    });
+
+      // Send JSON over WS to frontend clients
+      websocketServer.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(msg.toString());
+        }
+      });
+    }
+
   });
 
   socket.on("end", () => {
