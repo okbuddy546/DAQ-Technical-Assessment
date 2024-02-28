@@ -5,7 +5,6 @@ using namespace std;
 #include <string>
 
 #define conversionFactor 0.1;
-#define bitLength 16;
 const std::string wheelSpeedCANId =  "705";
 
 struct CANData {
@@ -51,14 +50,18 @@ struct CANData extractCANData(std::string data, std::string id) {
     unsigned long long dataInt = std::stoull(data, nullptr, 16);
     
     // extracting wheel speed data from the dataInt
-    double wheelSpeedFR = (dataInt >> 48) & 0xFFFF;
-    double wheelSpeedRR = (dataInt >> 16) & 0xFFFF;
+    unsigned long long wheelSpeedFR = (dataInt >> 48) & 0xFFFF;
+    wheelSpeedFR = ((wheelSpeedFR & 0xFF00) >> 8) | ((wheelSpeedFR & 0x00FF) << 8);
+    
+
+    unsigned long long wheelSpeedRR = (dataInt >> 16) & 0xFFFF;
+    wheelSpeedRR = ((wheelSpeedRR & 0xFF00) >> 8) | ((wheelSpeedRR & 0x00FF) << 8);
     
     //converting to actual wheel speed
-    wheelSpeedFR = wheelSpeedFR * conversionFactor;
-    wheelSpeedRR = wheelSpeedRR * conversionFactor;
+    double doublewheelSpeedFR = wheelSpeedFR * conversionFactor;
+    double doublewheelSpeedRR = wheelSpeedRR * conversionFactor;
 
-    struct CANData canData = {wheelSpeedFR, wheelSpeedRR};
+    struct CANData canData = {doublewheelSpeedFR, doublewheelSpeedRR};
 
     return canData;
 } 
