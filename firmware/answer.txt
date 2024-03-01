@@ -1,3 +1,52 @@
 Use this file to write your answer to Stage 2 of the firmware tasks.
 
 Question 1:
+
+Advantages:
+Using CAN protocol significantly reduces wiring complexity, weight because of multiplexing, 
+allowing for faster communication between ECUs while having low production costs. 
+
+It has built-in error detection and handling mechanisms where nodes transmit flags when errors
+are detected which prevents faulty devices from creating useless traffic. Such mechanisms for error detection include 
+cyclic redundancy checks and acknowledgment checks. CAN protocol is very reliable and has high fault tolerance because of this
+especially compared to protocols like USB or PCIe. 
+
+It is very robust in that the bus lines are highly resistant to electrical disturbances which is crucial 
+for safety critical systems such as a car. This coupled with its error detection mechanisms makes it more robust
+compared to protocols such as USB or SPI, which can struggle in noisy environments. 
+
+CAN protocol uses a technique called loseless bitwise arbitration where CAN frames are prioritised by ID which 
+allows higher priority data to get immediate bus access without interrupting other frames. This allows for 
+maximum utilisation of bandwidth since there won't be any collisions when transmitting messages. This reduces network
+communication delays, allowing for an efficient system. 
+
+It is highly flexible/modular because it uses a message-based communciation protocol where the nodes on the bus 
+don't have any identifying information associated with them which allows for faster and more efficient integration of 
+new ECUs. 
+
+
+Disadvantages:
+CAN bus has a limited data rate compared to other protocols such as PCIe/Ethernet, which may not be suitable for 
+high-bandwidth applications, especially with large-scale data acquisition. However, CAN FD has improved data 
+rates which mitigates this limitation to a moderate extent. 
+
+CAN doesn't have any intrinsic security features and there is no encryption in standard CAN implementations 
+and so programs must have their own security mechanisms to prevent any form of attacks. 
+
+
+Reasons for using CAN protocol in Redback Racing's ES, powertrain, DAQ and AV departments:
+- CAN's robustness and high fault tolerance makes it suitable for a race car where high reliability is crucial.
+
+- Since it is a cost effective solution for communication between components of the vehicle, it will optimise costs 
+  without compromising performance and reliability. 
+
+- Allows departments to add, remove and modify components on the vehicle without requiring major changes to existing
+  communication infrastructure. 
+
+- CAN provides a deterministic communication approach, and so can be used for real-time monitoring of applications
+  such as engine management and telemetry data acquisition which are crucial to monitor when racing. 
+
+- Multiple devices can connect to the CAN bus without a centralised controller which allows for seamless integration of 
+  components throughout the car, allowing for comprehensive data sharing and coordination. 
+
+
