@@ -22,29 +22,32 @@ tcpServer.on("connection", (socket) => {
 
     const dataString: String = msg.toString();
     // Checks if error flag is thrown in data which is indicated by "}}" at the end of string.
-    if (dataString.slice(-2) !== "}}") {
-      const jsonData: VehicleData = JSON.parse(msg.toString());
-      const { battery_temperature, timestamp } = jsonData;
-      
-      if (battery_temperature <= 20 || battery_temperature >= 80) {
-        criticalTempTimestamps.push(timestamp);
-
-        criticalTempTimestamps = criticalTempTimestamps.filter(
-          (timestamps) => timestamp - timestamps <= 5000
-        );
-
-        if (criticalTempTimestamps.length >= 3) {
-          console.log(`Critical battery temperature detected. \nCurrent Timestamp: ${timestamp}`);
-        }
-      }
-
-      // Send JSON over WS to frontend clients
-      websocketServer.clients.forEach(function each(client) {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(msg.toString());
-        }
-      });
+    if (dataString.slice(-2) === "}}") {
+      return;
     }
+
+    const jsonData: VehicleData = JSON.parse(msg.toString());
+    const { battery_temperature, timestamp } = jsonData;
+    
+    if (battery_temperature <= 20 || battery_temperature >= 80) {
+      criticalTempTimestamps.push(timestamp);
+
+      criticalTempTimestamps = criticalTempTimestamps.filter(
+        (timestamps) => timestamp - timestamps <= 5000
+      );
+
+      if (criticalTempTimestamps.length >= 3) {
+        console.log(`Critical battery temperature detected. \nCurrent Timestamp: ${timestamp}`);
+      }
+    }
+
+    // Send JSON over WS to frontend clients
+    websocketServer.clients.forEach(function each(client) {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(msg.toString());
+      }
+    });
+    
 
   });
 
